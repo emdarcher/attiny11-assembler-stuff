@@ -5,14 +5,14 @@
 
 ;#include <avr/io.h>
 
-;.INCLUDE "TN13DEF.INC"   ;(ATTINY13 DEFINITIONS)
+.INCLUDE "tn11def.inc"   ;(ATTINY13 DEFINITIONS)
 
-.equ DDRB,  0x17
-.equ PINB, 0x16
+;.equ DDRB= 0x17
+;.equ PINB= 0x16
 
- A = 16             ;GENERAL PURPOSE ACCUMULATOR
- I = 20             ;INDEX
- N = 22             ;COUNTER
+.def A = r16             ;GENERAL PURPOSE ACCUMULATOR
+.def I = r20             ;INDEX
+.def N = r22             ;COUNTER
 
 .org 0x00;
 RESET:
