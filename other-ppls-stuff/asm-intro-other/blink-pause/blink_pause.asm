@@ -5,7 +5,7 @@
 
 ;#include <avr/io.h>
 
-.INCLUDE "tn11def.inc"   ;(ATTINY13 DEFINITIONS)
+.INCLUDE "tn11def.inc"   ;(ATTINY11 DEFINITIONS)
 
 ;.equ DDRB= 0x17
 ;.equ PINB= 0x16
@@ -24,7 +24,12 @@ RESET:
 main:
       SBI   PINB,0       ;TOGGLE THE 0 BIT
       RCALL PAUSE        ;WAIT/PAUSE
-       RJMP main   ;GO BACK AND DO IT AGAIN
+       RJMP mainb   ;GO BACK AND DO IT AGAIN
+
+mainb:
+      CBI   PINB,0       ;TOGGLE THE 0 BIT
+      RCALL PAUSE        ;WAIT/PAUSE
+       RJMP mainb   ;GO BACK AND DO IT AGAIN
 
 ;----------------;
 ;PAUSE ROUTINES  ;
