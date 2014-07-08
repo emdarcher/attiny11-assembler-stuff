@@ -14,9 +14,9 @@
 ; these definitions would result in a number of error messages. Simply
 ; copy the def.inc-file to the same directory where your source code resides
 ; or add your whole path to the include-statement below.
-;.NOLIST
-;.INCLUDE "8515def.inc"
-;.LIST
+.NOLIST
+.INCLUDE "tn11def.inc"
+.LIST
 ; The directives NOLIST and LIST switch off the listing of the INCLUDE-file
 ; (the listing will be found in the file TEST1.LST).
 ; Define register
