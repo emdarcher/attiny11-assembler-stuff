@@ -29,7 +29,7 @@ main:
 mainb:
       CBI   PINB,0       ;TOGGLE THE 0 BIT
       RCALL PAUSE        ;WAIT/PAUSE
-       RJMP mainb   ;GO BACK AND DO IT AGAIN
+       RJMP main   ;GO BACK AND DO IT AGAIN
 
 ;----------------;
 ;PAUSE ROUTINES  ;
