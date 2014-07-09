@@ -22,10 +22,14 @@
 .def pwm_calc_store = r20;
 
 
+
 .def cnt_0 = r14;
 .def cnt_1 = r15;
+.def PWM_INC_VAL = r13; to store increments to PWM in a counter
 
-.equ CNTB_INCS = 64; number of increments in counter B
+.equ PWM_dir_bit = 1; bit for PWM direction status in status_regA
+
+.equ CNTB_INC = 64; number of increments in counter B
 
 .macro tgl_io
 	in tgl_io_regA, @0; input the io data in first arg
@@ -33,6 +37,18 @@
 	eor tgl_io_regA, tgl_io_regB; toggle the bit in other reg
 	out @0, tgl_io_regA; send it back to the io PORTx in 1st arg
 
+.endmacro
+
+.macro tgl_tfr_reg
+    ldi transfer_regA, (1<<@1);
+    eor @0, transfer_regA;
+    
+.endmacra
+
+.macro tfr_to_reg
+    ldi transfer_regA,@1;
+    mov @0,transfer_regA;
+    clr transfer_regA; clear the transfer register after use
 .endmacro
 
 .ORG 0000
@@ -69,7 +85,17 @@ MAIN_LOOP:
 ;----------------------------------;
 TIM0_OVF:
       tgl_io   PORTB,0       ;FLIP THE 0 BIT in PORTB to toggle PBO
+      
+      RCALL COUNT_A; count stuff
+      
       ldi pwm_calc_store,0xFF; reset to 255
+      clr pwm_val_store;
+      ;ldi transfer_regA,0xFF
+      sbrs status_regA, PWM_dir_bit;if set
+        rcall put_pwm_up;
+      sbrc status_regA, PWM_dir_bit;if clear
+        OR pwm_val_store,PWM_INC_VAL;
+        
       sub pwm_calc_store,pwm_val_store; subtract from 255 to get cnt value
 										;to set to get PWM ON time
         sbis PORTB,0;if bit 0 is 1,
@@ -77,7 +103,7 @@ TIM0_OVF:
         sbic PORTB,0;if bit 0 is 0
             out TCNT0,pwm_val_store;;set counter  
 		
-        
+        ;RCALL COUNT_A; count stuff
         
 	  ;tgl_io   PORTB,0       ;FLIP THE 0 BIT in PORTB to toggle PBO
             RETI
@@ -85,23 +111,43 @@ TIM0_OVF:
 CLR_CNTA:
     clr cnt_0;
         ret;
+        
 COUNT_A:
     DEC cnt_0;
         BRNE COUNT_B; increment the count_B counter 
         RET;
 
 SET_CNTB:
-    ldi transfer_regA,CNTB_INC;
-    mov cnt_1,transfer_regA;
+    tfr_to_reg  cnt_1,CNTB_INC;
+    ;ldi transfer_regA,CNTB_INC;
+    ;mov cnt_1,transfer_regA;
+    ;clr transfer_regA; clear the transfer register after use
         ret;
 COUNT_B:
     DEC cnt_1;
-        
+        BRNE PWM_INC; goto incrementing the PWM
+    RET;
     
+PWM_INC:
+    RCALL SET_CNTB; reset counter B
+    ;sbrs status_regA,PWM_dir_bit; if set
+    
+    ;sbrc status_regA,PWM_dir_bit; if cleared
+    DEC PWM_INC_VAL;
+        BRNE TOGGLE_PWM_STATUS;
+    RET;
+    
+TOGGLE_PWM_STATUS:
+    tgl_tfr_reg status_regA,PWM_dir_bit; toggle it
+    RET;
+
 do_a_ret_thingy:
     RET;
 
-
+put_pwm_up:
+    ldi pwm_val_store,255;
+    sub pwm_val_store,PWM_INC_VAL;
+    ret;
 
     
 
