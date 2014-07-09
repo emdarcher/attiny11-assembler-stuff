@@ -1,5 +1,5 @@
 MCU=attiny11
-TARGET = button-blink
+TARGET = blink-timer
 ASRC = $(TARGET).asm
 
 AS = avra
@@ -21,6 +21,3 @@ all:
 
 program:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH)
-
-clean:
-	rm *.cof *.obj  *.hex

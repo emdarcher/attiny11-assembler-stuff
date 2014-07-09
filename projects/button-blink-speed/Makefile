@@ -1,5 +1,5 @@
 MCU=attiny11
-TARGET = button-blink
+TARGET = button-blink-speed
 ASRC = $(TARGET).asm
 
 AS = avra
