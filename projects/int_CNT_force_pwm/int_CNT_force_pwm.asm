@@ -20,7 +20,6 @@
 .def pwm_calc_store = r20;
 
 
-
 .macro tgl_io
 	in tgl_io_regA, @0; input the io data in first arg
 	ldi  tgl_io_regB, (1<<@1); input the 2nd arg bit to reg b
@@ -67,6 +66,6 @@ TIM0_OVF:
         out TCNT0, pwm_calc_store; ;and set counter 
       sbic PORTB,0;if bit 0 is 0
         out TCNT0,pwm_val_store;;set counter  
-		
+        
 	  ;tgl_io   PORTB,0       ;FLIP THE 0 BIT in PORTB to toggle PBO
        RETI
