@@ -41,14 +41,14 @@
 .endmacro
 
 .macro tgl_tfr_reg
-    ldi transfer_regA, (1<<@1);
-    eor @0, transfer_regA;
+    ldi transfer_regA, (1<<@1);toggle a bit in a register using
+    eor @0, transfer_regA;      a transfer register
     
 .endmacra
 
 .macro tfr_to_reg
-    ldi transfer_regA,@1;
-    mov @0,transfer_regA;
+    ldi transfer_regA,@1;put 2nd arg into transfer_regA
+    mov @0,transfer_regA; move that into the desired register in arg 1
     clr transfer_regA; clear the transfer register after use
 .endmacro
 
