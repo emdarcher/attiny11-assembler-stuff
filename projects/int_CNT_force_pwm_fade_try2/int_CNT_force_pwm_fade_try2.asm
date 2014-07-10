@@ -14,6 +14,7 @@
 .DEF A = R16             ;GENERAL PURPOSE ACCUMULATOR
 .def status_regA = r17;
 .def transfer_regA = r18;
+.def transfer_regB = r23;
 ;.def tgl_regA = r19;
 ;.def tgl_regB = r20;
 .def tgl_io_regA = r21;
@@ -29,7 +30,7 @@
 
 .equ PWM_dir_bit = 1; bit for PWM direction status in status_regA
 
-.equ CNTB_INC = 16; number of increments in counter B
+.equ CNTB_INC = 255; number of increments in counter B
 
 .macro tgl_io
 	in tgl_io_regA, @0; input the io data in first arg
@@ -59,7 +60,7 @@
 ON_RESET:
     SBI DDRB,0           ;SET PORTB0 FOR OUTPUT
     cbi PORTB,PB0	;put PBO 
-    LDI A,0b00000011    ;SET PRESCALER TO /64        
+    LDI A,0b00000011    ;SET PRESCALER TO /256;/1024        
     OUT TCCR0,A         ;TIMER/COUNTER CONTROL REGISTER 
     LDI A,0b00000010    ;ENABLE TIMER-OVERFLOW INTERUPT
     OUT TIMSK,A
@@ -77,8 +78,43 @@ ON_RESET:
 ; MAIN ROUTINE ;
 ;--------------;
 MAIN_LOOP:
-      NOP                ;DO NOTHING
+      ;rcall DELAY1;
+      ;rcall FADE_DELAY;
+      ;  rcall PWM_INC;
+      nop
        RJMP MAIN_LOOP
+
+FADE_DELAY:
+        clr r12;
+DELAY:
+        ;NOP
+        ;NOP
+        ;nop
+        ;nop
+        ;nop
+        ;nop
+        ;nop
+        ;nop
+        ;nop
+        ;nop
+        ;nop
+        ;nop
+        ;nop
+        ;nop
+        ;nop
+        ;nop
+        dec r12;
+        BRNE DELAY;
+        ret;
+        
+DELAY1:
+    tfr_to_reg r11,16;
+D1: 
+    rcall FADE_DELAY;
+    dec r11;
+    BRNE D1;
+        RET;
+        
 
 ;----------------------------------;
 ; TIMER OVER-FLOW INTERUPT ROUTINE ;
@@ -86,9 +122,9 @@ MAIN_LOOP:
 TIM0_OVF:
       tgl_io   PORTB,0       ;FLIP THE 0 BIT in PORTB to toggle PBO
       
-      ;RCALL COUNT_A; count stuff
+      RCALL COUNT_A; count stuff
       
-      rcall PWM_INC;
+      ;rcall PWM_INC;
       
       ldi pwm_calc_store,0xFF; reset to 255
       clr pwm_val_store;
@@ -96,7 +132,8 @@ TIM0_OVF:
       sbrs status_regA, PWM_dir_bit;if set
         rcall put_pwm_up;
       sbrc status_regA, PWM_dir_bit;if clear
-        OR pwm_val_store,PWM_INC_VAL;
+        ;OR pwm_val_store,PWM_INC_VAL;
+        rcall put_pwm_down;
         
       sub pwm_calc_store,pwm_val_store; subtract from 255 to get cnt value
 										;to set to get PWM ON time
@@ -108,7 +145,7 @@ TIM0_OVF:
         ;RCALL COUNT_A; count stuff
         
 	  ;tgl_io   PORTB,0       ;FLIP THE 0 BIT in PORTB to toggle PBO
-            RETI
+            RETI;
 
 CLR_CNTA:
     clr cnt_0;
@@ -131,16 +168,21 @@ COUNT_B:
     RET;
     
 PWM_INC:
-    RCALL SET_CNTB; reset counter B
+    ;RCALL SET_CNTB; reset counter B
     ;sbrs status_regA,PWM_dir_bit; if set
     
     ;sbrc status_regA,PWM_dir_bit; if cleared
     DEC PWM_INC_VAL;
         BRNE TOGGLE_PWM_STATUS;
     RET;
-    
+
+set_PWM_INC_VAL:
+    tfr_to_reg PWM_INC_VAL,230;
+    ret;
+
 TOGGLE_PWM_STATUS:
     tgl_tfr_reg status_regA,PWM_dir_bit; toggle it
+    rcall set_PWM_INC_VAL;
     RET;
 
 do_a_ret_thingy:
@@ -148,8 +190,20 @@ do_a_ret_thingy:
 
 put_pwm_up:
     ldi pwm_val_store,255;
-    sub pwm_val_store,PWM_INC_VAL;
+    ldi transfer_regA, 12;
+    clr transfer_regB;
+    or transfer_regB, PWM_INC_VAL;
+    sub pwm_val_store,transfer_regB;
+    add pwm_val_store,transfer_regA;
+    clr transfer_regB;
     ret;
 
-    
+put_pwm_down:
+    ldi transfer_regA, 12;
+    clr transfer_regB;
+    or transfer_regB, PWM_INC_VAL; 
+    add transfer_regB,transfer_regA;
+    or pwm_val_store,transfer_regB;
+    clr transfer_regB;
+    ret;
 
