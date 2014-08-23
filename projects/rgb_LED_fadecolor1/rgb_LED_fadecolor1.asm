@@ -71,11 +71,13 @@ ON_RESET:
     ;SBI DDRB,PB0        ;SET PORTB0 FOR OUTPUT by setting bit 0 in DDRB
     ldi A,0b00011100;set PB2-4 to output
     out DDRB,A; load into DDRB
-    ldi LED_RGB_SEL,0b00000101; set to start with Red (bit2)
+    ldi LED_RGB_SEL,0b00000100; set to start with Red (bit2)
     
     ori status_regA, (1<<PWM_dir_bit);//set the direction to always be up
     
-    tgl_io PORTB,3;
+    ;tgl_io PORTB,3;
+    ldi A, 0b00010100;
+    out PORTB,A;
     
     LDI A,0b00000011    ;SET PRESCALER TO /64      
     OUT TCCR0,A         ;load into TIMER/COUNTER CONTROL REGISTER 
@@ -123,10 +125,10 @@ SWITCH_LED:
         
     mov LED_RGB_SEL,A; put reg A into other reg
     clr A;
-    cbr status_regA, (1<<PWM_flag_bit); clear the PWM_flag_bit
+    ;cbr status_regA, (1<<PWM_flag_bit); clear the PWM_flag_bit
     
     rcall WHICH_TOGGLE;
-    
+    cbr status_regA, (1<<PWM_flag_bit); clear the PWM_flag_bit
     ret;
     
 WHICH_TOGGLE:
