@@ -14,6 +14,9 @@
 
 ;****DEFINING_REGISTER_NAMES****;
 .DEF A = R16             ;GENERAL PURPOSE ACCUMULATOR
+
+.def B = r25;
+
 .def status_regA = r17;
 .def transfer_regA = r18;
 .def transfer_regB = r23;
@@ -71,7 +74,7 @@
 
 ON_RESET:
     ;SBI DDRB,PB0        ;SET PORTB0 FOR OUTPUT by setting bit 0 in DDRB
-    ldi A,0b00011101;set PB2-4 to output
+    ldi A,0b00011100;set PB2-4 to output
     out DDRB,A; load into DDRB
     ldi LED_RGB_SEL,0b00000100; set to start with Red (bit2)
     
@@ -98,9 +101,12 @@ MAIN_LOOP:
 ; TIMER OVER-FLOW INTERUPT ROUTINE ;
 ;----------------------------------;
 TIM0_OVF:
+    ;nop;
+    ;nop;
+    ;nop;
+    ;nop;
     
-    
-    tgl_io   PORTB,0       ;FLIP THE 0 BIT in PORTB to toggle PBO
+    ;tgl_io   PORTB,0       ;FLIP THE 0 BIT in PORTB to toggle PBO
     
     ;clr A;
     ldi A,(1<<LED_status_bit); xor toggle led status bit
@@ -129,6 +135,11 @@ TIM0_OVF:
     ;ldi A,(1<<LED_status_bit); xor toggle led status bit
     ;eor LED_RGB_SEL,A;
     ;clr A;
+    nop;misterious NOPs that make the code work
+    nop;
+    nop;
+    nop;
+    nop;
     
     RETI; return from the interrupt service routine
 
@@ -164,9 +175,13 @@ WHICH_TOGGLE:
     sbrc LED_RGB_SEL,LED_B_bit;
         ldi A,0b00001100;
     
-    in tgl_io_regA,PORTB;
-    eor tgl_io_regA,A; xor toggle the bits
-    out PORTB, tgl_io_regA; put to port
+    ;in tgl_io_regA,PORTB;
+    ;eor tgl_io_regA,A; xor toggle the bits
+    ;out PORTB, tgl_io_regA; put to port
+    
+    in B,PORTB;
+    eor B,A; xor toggle the bits
+    out PORTB, B; put to port
     
     ;ldi A,(1<<LED_status_bit); xor toggle led status bit
     ;eor LED_RGB_SEL,A;
