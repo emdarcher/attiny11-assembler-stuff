@@ -29,9 +29,11 @@
 .equ LED_G_bit = 1;G
 .equ LED_B_bit = 0;B
 
+.equ LED_status_bit = 7;
 
 .equ PWM_dir_bit = 1; bit for PWM direction status in status_regA
 .equ PWM_flag_bit = 2;
+
 
 ;****MACROS****;
 .macro tgl_io
@@ -69,14 +71,14 @@
 
 ON_RESET:
     ;SBI DDRB,PB0        ;SET PORTB0 FOR OUTPUT by setting bit 0 in DDRB
-    ldi A,0b00011100;set PB2-4 to output
+    ldi A,0b00011101;set PB2-4 to output
     out DDRB,A; load into DDRB
     ldi LED_RGB_SEL,0b00000100; set to start with Red (bit2)
     
     ori status_regA, (1<<PWM_dir_bit);//set the direction to always be up
     
     ;tgl_io PORTB,3;
-    ldi A, 0b00010100;
+    ldi A, 0b00001100;
     out PORTB,A;
     
     LDI A,0b00000011    ;SET PRESCALER TO /64      
@@ -98,23 +100,42 @@ MAIN_LOOP:
 TIM0_OVF:
     
     
-    ;;tgl_io   PORTB,0       ;FLIP THE 0 BIT in PORTB to toggle PBO
+    tgl_io   PORTB,0       ;FLIP THE 0 BIT in PORTB to toggle PBO
+    
+    ;clr A;
+    ldi A,(1<<LED_status_bit); xor toggle led status bit
+    eor LED_RGB_SEL,A;
+    clr A;
+    ;tgl_tfr_reg LED_RGB_SEL,LED_status_bit;toggle
     
     rcall WHICH_TOGGLE;
     
+    
+    
     rcall PWM_INC; call the PWM_INC subroutine to change PWM val
+
+    
 
     ldi pwm_calc_store,255; reset to 255
     sub pwm_calc_store,pwm_val_store; subtract from 255 to get cnt value
                                         ;to set to get PWM ON time
-    sbis PORTB,0;skip if bit 0 is 1,
+    ;sbis PORTB,0;skip if bit 0 is 1,
+    sbrs LED_RGB_SEL,LED_status_bit;
         out TCNT0, pwm_calc_store; set counter 
-    sbic PORTB,0;skip if bit 0 is 0
+    ;sbic PORTB,0;skip if bit 0 is 0
+    sbrc LED_RGB_SEL,LED_status_bit;
         out TCNT0,pwm_val_store; set counter  
+    
+    ;ldi A,(1<<LED_status_bit); xor toggle led status bit
+    ;eor LED_RGB_SEL,A;
+    ;clr A;
     
     RETI; return from the interrupt service routine
 
 SWITCH_LED:
+    
+    rcall WHICH_TOGGLE;
+    
     clr A;
     sbrc LED_RGB_SEL,LED_R_bit; skip if clear
         ldi A, 0b00000010;set to G in A
@@ -122,12 +143,15 @@ SWITCH_LED:
         ldi A, 0b00000001;set to B
     sbrc LED_RGB_SEL,LED_B_bit; skip if clear
         ldi A, 0b00000100;set to R
-        
+    
+    sbrc LED_RGB_SEL,LED_status_bit;if clear skip
+        ori A, (1<<LED_status_bit); if set then set in A as well to preserve it.
+    
     mov LED_RGB_SEL,A; put reg A into other reg
     clr A;
     ;cbr status_regA, (1<<PWM_flag_bit); clear the PWM_flag_bit
     
-    rcall WHICH_TOGGLE;
+    ;rcall WHICH_TOGGLE;
     cbr status_regA, (1<<PWM_flag_bit); clear the PWM_flag_bit
     ret;
     
@@ -143,6 +167,9 @@ WHICH_TOGGLE:
     in tgl_io_regA,PORTB;
     eor tgl_io_regA,A; xor toggle the bits
     out PORTB, tgl_io_regA; put to port
+    
+    ;ldi A,(1<<LED_status_bit); xor toggle led status bit
+    ;eor LED_RGB_SEL,A;
     
     clr A;
     ret;
