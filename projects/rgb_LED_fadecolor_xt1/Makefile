@@ -24,3 +24,21 @@ program:
 
 clean:
 	rm *.cof *.obj  *.hex
+
+avrdude_terminal:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -nt
+
+
+#for internal oscillator and ext reset enabled
+DEFAULT_LFUSE = 0xfc
+
+set_default_fuses:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U fuse:w:$(DEFAULT_LFUSE):m
+
+EXT_RC_LFUSE = 0xfd
+set_ext_RC_fuses:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U fuse:w:$(EXT_RC_LFUSE):m
+
+EXT_CLK_LFUSE = 0xf8
+set_ext_clk_fuses:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U fuse:w:$(EXT_CLK_LFUSE):m

@@ -31,6 +31,10 @@
 .equ LED_R_bit = 2;R
 .equ LED_G_bit = 1;G
 .equ LED_B_bit = 0;B
+.equ R_port_bit = 4;
+.equ G_port_bit = 2;
+.equ B_port_bit = 0;
+
 
 .equ LED_status_bit = 7;
 
@@ -80,14 +84,16 @@ ON_RESET:
     out MCUCR,A; 
     
     ;SBI DDRB,PB0        ;SET PORTB0 FOR OUTPUT by setting bit 0 in DDRB
-    ldi A,0b00011100;set PB2-4 to output
+    ;ldi A,0b00011100;set to output
+    ldi A, ((1<<R_port_bit)|(1<<G_port_bit)|(1<<B_port_bit));
     out DDRB,A; load into DDRB
     ldi LED_RGB_SEL,0b00000100; set to start with Red (bit2)
     
     ori status_regA, (1<<PWM_dir_bit);//set the direction to always be up
     
     ;tgl_io PORTB,3;
-    ldi A, 0b00001100;
+    ;ldi A, 0b00001100;
+    ldi A, ((1<<G_port_bit)|(1<<B_port_bit));
     out PORTB,A;
     
     LDI A,0b00000011    ;SET PRESCALER TO /64      
@@ -176,11 +182,14 @@ SWITCH_LED:
 WHICH_TOGGLE:
     clr A;
     sbrc LED_RGB_SEL,LED_R_bit;
-        ldi A,0b00010100;
+        ;ldi A,0b00010100
+        ldi A,((1<<R_port_bit)|(1<<B_port_bit));
     sbrc LED_RGB_SEL,LED_G_bit;
-        ldi A,0b00011000;
+        ;ldi A,0b00011000;
+        ldi A,((1<<R_port_bit)|(1<<G_port_bit));
     sbrc LED_RGB_SEL,LED_B_bit;
-        ldi A,0b00001100;
+        ;ldi A,0b00001100;
+        ldi A,((1<<G_port_bit)|(1<<B_port_bit));
     
     ;in tgl_io_regA,PORTB;
     ;eor tgl_io_regA,A; xor toggle the bits
