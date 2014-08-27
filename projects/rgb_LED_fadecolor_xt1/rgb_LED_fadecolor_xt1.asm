@@ -76,6 +76,8 @@
 .ORG OVF0addr
     RJMP TIM0_OVF   ;Timer0 Overflow Handler
 
+;;
+;;EXECUTES ON RESET
 ON_RESET:
     
     
@@ -156,6 +158,8 @@ TIM0_OVF:
     
     RETI; return from the interrupt service routine
 
+
+;;SUBROUTINE that switches which led is the increasing brightness one
 SWITCH_LED:
     
     rcall WHICH_TOGGLE;
@@ -178,7 +182,9 @@ SWITCH_LED:
     ;rcall WHICH_TOGGLE;
     cbr status_regA, (1<<PWM_flag_bit); clear the PWM_flag_bit
     ret;
-    
+
+
+;;subrouting that determines which leds to toggle and toggles them
 WHICH_TOGGLE:
     clr A;
     sbrc LED_RGB_SEL,LED_R_bit;
@@ -205,7 +211,7 @@ WHICH_TOGGLE:
     clr A;
     ret;
 
-
+;;increments or decrements the PWM based on PWM dir bit
 PWM_INC:
     sbrs status_regA,PWM_dir_bit; skip if set
         rcall put_pwm_down; call the put_pwm_dowm subroutine
@@ -222,11 +228,13 @@ TOGGLE_PWM_STATUS: ;toggles the PWM change direction (up or down)
     cbr status_regA, (1<<PWM_flag_bit); clear the PWM_flag_bit
     RET; return from subroutine
 
+;;stores the pwm_value
 STORE_PWM:
     clr pwm_val_store; clear the pwm storage before new value
     or pwm_val_store,PWM_INC_VAL; OR the PWM_INC_VAL into pwm_val_store
     ret; return from subroutine
 
+;;puts the pwm up (increments it)
 put_pwm_up:
     inc PWM_INC_VAL; increment PWM_INC_VAL up by one
         BRNE STORE_PWM; if not equal to zero then store the value
@@ -235,6 +243,7 @@ put_pwm_up:
     tgl_tfr_reg status_regA,PWM_flag_bit; toggle the PWM_flag_bit
     ret; return from subroutine
 
+;;puts pwm down (decrements it)
 put_pwm_down:
     dec PWM_INC_VAL; decrement PWM_INC_VAL dowm by one
         BRNE STORE_PWM; if not equal to zero, then store it
