@@ -44,10 +44,10 @@
 
 ;****MACROS****;
 .macro tgl_io
-	in tgl_io_regA, @0; input the io data in first arg
-	ldi  tgl_io_regB, (1<<@1); input the 2nd arg bit to reg b
-	eor tgl_io_regA, tgl_io_regB; toggle the bit in other reg
-	out @0, tgl_io_regA; send it back to the io PORTx in 1st arg
+    in tgl_io_regA, @0; input the io data in first arg
+    ldi  tgl_io_regB, (1<<@1); input the 2nd arg bit to reg b
+    eor tgl_io_regA, tgl_io_regB; toggle the bit in other reg
+    out @0, tgl_io_regA; send it back to the io PORTx in 1st arg
 .endmacro
 
 ;.macro tgl_io_byte
