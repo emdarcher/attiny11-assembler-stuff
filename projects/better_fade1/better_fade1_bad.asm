@@ -59,9 +59,7 @@ ON_RESET:
     OUT TCCR0,A         ;load into TIMER/COUNTER CONTROL REGISTER 
     LDI A,0b00000010    ;ENABLE TIMER-OVERFLOW INTERUPT
     OUT TIMSK,A         ;load into TIMER/COUNTER interrupt mask register
-     
-    sbr status_regA,(1<<PWM_dir_bit);
-    SEI                ;ENABLE INTERUPTS GLOBALLY
+     SEI                ;ENABLE INTERUPTS GLOBALLY
     
 ;--------------;
 ; MAIN ROUTINE ;
@@ -80,11 +78,8 @@ TIM0_OVF:
 
     tgl_io   PORTB,0       ;FLIP THE 0 BIT in PORTB to toggle PBO
       
-    
-    
-    
+
     mov pwm_val_store, PWM_INC_VAL;copy
-    
     sbrc status_regA, PWM_dir_bit;skip if dir flag clear
         com pwm_val_store; 1's complement (255-val)
 
@@ -93,7 +88,7 @@ TIM0_OVF:
         com A; 1's complement (255-value) for ON TIME
     out TCNT0,A; set counter  
     
-    tst PWM_INC_VAL,PWM_INC_VAL;test for 0 or minus
+    and PWM_INC_VAL,PWM_INC_VAL;test for 0 or minus
     brne PWM_NOT_0;branch if not zero
 
     ldi A,(1<<PWM_dir_bit);flag bit
